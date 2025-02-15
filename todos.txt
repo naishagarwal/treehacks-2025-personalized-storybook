@@ -1,6 +1,7 @@
 - voice to text/text to voice pipeline
     - gemini, nvidia?? 
 - text prompt turning it into story (finetuning, segmenting)
+    - use perplexity here
 - creating prompt for luma
 - backend pipeline to send pics/videos from luma to frontend
 - frontend/display
