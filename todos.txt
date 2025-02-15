@@ -1,0 +1,10 @@
+- voice to text/text to voice pipeline
+    - gemini, nvidia?? 
+- text prompt turning it into story (finetuning, segmenting)
+- creating prompt for luma
+- backend pipeline to send pics/videos from luma to frontend
+- frontend/display
+- implementation of reading
+- user flow with some profile info to personalize it
+
+
