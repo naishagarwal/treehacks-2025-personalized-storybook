@@ -7,6 +7,7 @@ from openai import OpenAI
 import json
 import os
 from tinydb import TinyDB, Query
+import time
 
 from lumaai import LumaAI
 
@@ -22,13 +23,13 @@ app.add_middleware(
 )
 
 # Load API keys from environment variables
-#LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
+LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Initialize clients
 #genai_client = genai.Client(api_key=GEMINI_API_KEY)
-#luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
+luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Databse initialization and table creation
@@ -57,6 +58,70 @@ def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
     where the keys are "story" and "pages", and the values are the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the story. Besides these elements,
     there should be no other additional output. I should be able to use the command json.loads(output) to get the story and list of pages.
     """
+
+# Video Generation Helper Functions
+
+def generate_character_physical_description(story):
+  response = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant generating children's stories."},
+            {
+                "role": "user",
+                "content": "Please generate a physical description of the character in the following story. Include vivid description, enough to simulate the character in a video. Limit description to very concise direct physical attributes, including clothing. Here is the story: " + story
+            }
+        ]
+    )
+
+  return response.choices[0].message.content
+
+def generate_video_for_page(story: str, page: str, style: str) -> str:
+    physical_description = generate_character_physical_description(story)
+    starter_prompt = (
+        f"Please generate a video for the following page, in a {style} style. "
+        f"If the page involves the character, use this physical description: {physical_description}. "
+        "If not, generate a video without the character. Here is the page: "
+    )
+    prompt = starter_prompt + page
+    print("Video prompt:", prompt)
+    
+    generation = luma_client.generations.create(prompt=prompt)
+    completed = False
+    while not completed:
+        generation = luma_client.generations.get(id=generation.id)
+        if generation.state == "completed":
+            completed = True
+        elif generation.state == "failed":
+            raise RuntimeError(f"Video generation failed: {generation.failure_reason}")
+        print("Video generation in progress for page...")
+        time.sleep(3)
+    
+    video_url = generation.assets.video
+    print("Generated video URL:", video_url)
+    return video_url
+
+def background_generate_video(story_id: int, story: str, page_number: int, page_content: str, style: str):
+    """
+    Background task to generate a video for a single page and update its status in TinyDB.
+    """
+    try:
+        video_url = generate_video_for_page(story, page_content, style)
+        Video = Query()
+        record = videos_table.get(Video.story_id == story_id)
+        if record:
+            pages = record.get("pages", {})
+            pages[page_number]["video_url"] = video_url
+            videos_table.update({"pages": pages}, Video.story_id == story_id)
+            print(f"Updated story {story_id}, page {page_number} with video URL.")
+    except Exception as e:
+        Video = Query()
+        record = videos_table.get(Video.story_id == story_id)
+        if record:
+            pages = record.get("pages", {})
+            pages[page_number]["error"] = str(e)
+            videos_table.update({"pages": pages}, Video.story_id == story_id)
+            print(f"Error for story {story_id}, page {page_number}: {e}")
+    
 
 @app.post("/generate")
 async def create_story(request: StoryRequest):
