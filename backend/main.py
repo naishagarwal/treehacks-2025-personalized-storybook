@@ -10,6 +10,7 @@ from tinydb import TinyDB, Query
 import time
 from dotenv import load_dotenv
 from lumaai import LumaAI
+import uuid
 
 app = FastAPI()
 
