@@ -2,13 +2,13 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-from google import genai
+#from google import genai
 from openai import OpenAI
 import json
 import os
 from tinydb import TinyDB, Query
 import time
-
+from dotenv import load_dotenv
 from lumaai import LumaAI
 
 app = FastAPI()
@@ -22,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+load_dotenv()
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 #GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
