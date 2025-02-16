@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 
 const Generate = () => {
   const [input, setInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);  // State to track recording status
   const navigate = useNavigate();
 
   // Handle form submission
@@ -18,7 +19,7 @@ const Generate = () => {
   };
 
   // Simple voice input
-  const handleVoiceInput = () => {
+  const handleVoiceInputStart = () => {
     const recognition = new window.webkitSpeechRecognition();
     recognition.lang = "en-US";
     recognition.onresult = (event) => {
@@ -27,20 +28,47 @@ const Generate = () => {
     recognition.start();
   };
 
+  const handleVoiceInputEnd = () => {
+    setIsRecording(false);  // Stop recording once the button is released
+  };
+
   return (
     <div>
-    <NavBar />
-        <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
-        <h1 className="text-2xl mb-4">Describe Your Story</h1>
+      <NavBar />
+      <div className="flex flex-col items-center justify-center h-screen text-white">
+        <h1 className="text-2xl font-light mb-6">Describe your story...</h1> {/* Title styling */}
+
+        {/* Main input box */}
         <textarea
-            className="w-1/2 h-32 p-4 mb-4 text-black"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter a story description here..."
+          className="w-1/2 h-32 p-4 mb-4 bg-white/10 border border-white text-white font-serif rounded-lg"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Enter a story description here..."
         />
-        <button onClick={handleVoiceInput} className="mb-4 px-4 py-2 bg-gray-700 rounded">🎤 Speak</button>
-        <button onClick={handleGenerate} className="px-6 py-2 bg-yellow-500 text-black rounded">Generate Story</button>
-        </div>
+
+        {/* Speak button */}
+        <button
+          onMouseDown={() => {
+            setIsRecording(true);  // Start recording when the button is pressed
+            handleVoiceInputStart();
+          }}
+          onMouseUp={handleVoiceInputEnd}  // Stop recording when the button is released
+          onTouchStart={() => setIsRecording(true)}
+          onTouchEnd={handleVoiceInputEnd}
+          className={`mb-4 px-6 py-3 border-2 border-white rounded-full ${isRecording ? 'bg-red-500' : 'bg-transparent'} transition-all`}
+        >
+          {/* No emoji */}
+          Speak
+        </button>
+
+        {/* Generate button */}
+        <button
+          onClick={handleGenerate}
+          className="px-6 py-3 border-2 border-white rounded-full hover:bg-white hover:text-yellow-500 transition-colors"
+        >
+          Generate Story
+        </button>
+      </div>
     </div>
   );
 };
