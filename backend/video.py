@@ -5,8 +5,8 @@ import time
 import json
 from openai import OpenAI
 
-LUMAAI_API_KEY = "luma-19f0d3ab-ba29-4fd7-b9d3-f237135d32f1-cc1826b7-2b05-431b-8a88-5b719a6d2d69"
-OPENAI_API_KEY = "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"
+LUMAAI_API_KEY =  "luma-19f0d3ab-ba29-4fd7-b9d3-f237135d32f1-cc1826b7-2b05-431b-8a88-5b719a6d2d69"
+OPENAI_API_KEY = "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"
 
 #initializing Luma AI
 client = LumaAI(
@@ -21,7 +21,7 @@ with open('story.json', 'r') as f:
 def generate_character_physical_description(story):
   client = OpenAI(api_key = OPENAI_API_KEY)
   response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant generating children's stories."},
             {
@@ -97,6 +97,7 @@ def generate_video(style):
 
     id = generation.id
     video_url = generation.assets.video
+    print(video_url)
 
     # download the video
     response = requests.get(video_url, stream=True)
