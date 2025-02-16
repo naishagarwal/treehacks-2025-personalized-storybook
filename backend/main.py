@@ -110,7 +110,7 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[page_number]["video_url"] = video_url
+            pages[str(page_number)]["video_url"] = video_url
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Updated story {story_id}, page {page_number} with video URL.")
     except Exception as e:
