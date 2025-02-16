@@ -15,6 +15,46 @@
             "gender": "",
             "race": "",
             "interests": "dogs"
+        },
+        "3": {
+            "nickname": "emily",
+            "age": 7,
+            "location": "boston",
+            "gender": "",
+            "race": "",
+            "interests": "cats, dessert"
+        }
+    },
+    "page_videos": {
+        "1": {
+            "story_id": 3,
+            "pages": {
+                "1": {
+                    "content": "One day, while Emily was at the park playing with her friends, she overheard some older kids making fun of her favorite dessert, cupcakes. They were saying mean things and laughing at her love for them.",
+                    "video_url": "https://storage.cdn-luma.com/dream_machine/68107682-d2e7-4b01-8245-4002e0b7a20f/6e2752de-e7bb-455b-8d33-1697c61decf4_result6395529b20798b20.mp4",
+                    "error": null
+                },
+                "2": {
+                    "content": "At first, Emily felt hurt and upset. But then she remembered something her parents had always told her - to stand up for herself and what she believed in. So, taking a deep breath, she walked up to the older kids.",
+                    "video_url": "https://storage.cdn-luma.com/dream_machine/fa13f5ff-e517-4a08-86ab-9911313bec2b/f3155979-30b8-4e5e-87fc-e545a1808635_resulte3724ceb2cf86997.mp4",
+                    "error": null
+                },
+                "3": {
+                    "content": "Emily looked them straight in the eye and said, 'I love cupcakes, and there's nothing wrong with that. Everyone has different tastes, and that's what makes us special.' The older kids were taken aback by Emily's confidence.",
+                    "video_url": "https://storage.cdn-luma.com/dream_machine/0fa3ee24-a2d2-447f-9155-95200173e705/23b6ba78-c0af-4e11-b10d-9e7935e88d82_result23aecdfedde9752a.mp4",
+                    "error": null
+                },
+                "4": {
+                    "content": "Seeing that Emily wasn't backing down, the older kids realized they were being unkind. They apologized to Emily and even asked if they could try one of her cupcakes. And from that day on, they all became friends, bonding over their shared love of desserts.",
+                    "video_url": "https://storage.cdn-luma.com/dream_machine/d41a01a6-e9ea-4d33-9230-990ba1d4c44e/7ccd5e64-55a2-41f0-acd1-d04f13ee50b4_resulta8fbc35d0a56ca7d.mp4",
+                    "error": null
+                },
+                "5": {
+                    "content": "Emily learned that standing up for yourself doesn't always mean getting into a fight. Sometimes, it just takes a little courage to speak your mind and show others why you're proud of who you are.",
+                    "video_url": "https://storage.cdn-luma.com/dream_machine/72021637-b41a-4656-9caa-1c73f02b9e58/a7b5b641-25e5-45f5-b01c-8b68fc7ae76c_resultb3726909f7ad3142.mp4",
+                    "error": null
+                }
+            }
         }
     }
 }

@@ -4,11 +4,12 @@ import NavBar from "../components/NavBar";
 
 const Generate = () => {
   const [input, setInput] = useState("");
-  const [isRecording, setIsRecording] = useState(false);  // State to track recording status
+  const [isRecording, setIsRecording] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch profile details on component mount using the stored profile_id
+  // Fetch profile details on component mount
   useEffect(() => {
     const profileId = localStorage.getItem("profile_id");
     if (profileId) {
@@ -21,16 +22,18 @@ const Generate = () => {
     }
   }, []);
 
-  // Handle story generation using both the user's input and the profile details
+  // Handle story generation
   const handleGenerate = async () => {
     if (!profile) {
       alert("Profile details are not loaded yet. Please complete your profile first.");
       return;
     }
 
+    setIsLoading(true);
+
     const requestPayload = {
       user_input: input,
-      child_profile: profile, // Use the profile details fetched from the backend
+      child_profile: profile,
     };
 
     try {
@@ -40,10 +43,17 @@ const Generate = () => {
         body: JSON.stringify(requestPayload),
       });
       const data = await response.json();
-      navigate(`/story/${data.story_id}`);
+
+      if (data.story_id) {
+        navigate(`/story/${data.story_id}`);
+      } else {
+        throw new Error("Story ID missing in response.");
+      }
     } catch (error) {
       console.error("Error generating story:", error);
       alert("Failed to generate story. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,14 +68,14 @@ const Generate = () => {
   };
 
   const handleVoiceInputEnd = () => {
-    setIsRecording(false);  // Stop recording once the button is released
+    setIsRecording(false);
   };
 
   return (
     <div>
       <NavBar />
       <div className="flex flex-col items-center justify-center h-screen text-white">
-        <h1 className="text-2xl font-light mb-6">Describe your story...</h1> {/* Title styling */}
+        <h1 className="text-2xl font-light mb-6">Describe your story...</h1>
 
         {/* Main input box */}
         <textarea
@@ -78,24 +88,26 @@ const Generate = () => {
         {/* Speak button */}
         <button
           onMouseDown={() => {
-            setIsRecording(true);  // Start recording when the button is pressed
+            setIsRecording(true);
             handleVoiceInputStart();
           }}
-          onMouseUp={handleVoiceInputEnd}  // Stop recording when the button is released
+          onMouseUp={handleVoiceInputEnd}
           onTouchStart={() => setIsRecording(true)}
           onTouchEnd={handleVoiceInputEnd}
           className={`mb-4 px-6 py-3 border-2 border-white rounded-full ${isRecording ? 'bg-red-500' : 'bg-transparent'} transition-all`}
         >
-          {/* No emoji */}
           Speak
         </button>
 
         {/* Generate button */}
         <button
           onClick={handleGenerate}
-          className="px-6 py-3 border-2 border-white rounded-full hover:bg-white hover:text-yellow-500 transition-colors"
+          disabled={isLoading}
+          className={`px-6 py-3 border-2 border-white rounded-full transition-colors ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-yellow-500'
+          }`}
         >
-          Generate Story
+          {isLoading ? "Generating..." : "Generate Story"}
         </button>
       </div>
     </div>

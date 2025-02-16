@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NavBar from '../components/NavBar';
 
 const Profile = () => {
   const [nickname, setNickname] = useState('');
@@ -40,6 +41,8 @@ const Profile = () => {
   };
 
   return (
+    <div>
+    <NavBar />
     <div className="min-h-screen bg-[#050200] flex items-center justify-center">
       <div className="p-6 rounded-md w-1/3 space-y-5">
         <h1 className="text-2xl text-center font-light mb-6">Reader Profile</h1>
@@ -120,6 +123,7 @@ const Profile = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

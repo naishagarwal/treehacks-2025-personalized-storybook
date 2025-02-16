@@ -8,7 +8,7 @@ import json
 import os
 from tinydb import TinyDB, Query
 import time
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
 
@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#load_dotenv()
+load_dotenv()
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 #GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -234,8 +234,9 @@ async def get_story(story_id: int):
         raise HTTPException(status_code=404, detail="Story not found")
 
 @app.get("/story_video/{story_id}/{page_number}")
-async def get_story_video_page(story_id: int, page_number: int):
+async def get_story_video_page(story_id: int, page_number: str):
     Video = Query()
+    print(f"Story id is {story_id} and page is {page_number}")
     record = videos_table.get(Video.story_id == story_id)
     if record:
         pages = record.get("pages", {})
