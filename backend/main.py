@@ -90,6 +90,7 @@ def generate_video_for_page(story: str, page: str, style: str) -> str:
     if isinstance(page, dict):
         page = page.get("content", str(page))
     physical_description = generate_character_physical_description(story)
+    print(physical_description)
     starter_prompt = (
         f"Please generate a video for the following page, in a {style} style. "
         f"If the page involves the character, use this physical description: {physical_description}. "
@@ -154,7 +155,7 @@ def generate_audio_for_page(page_text: str, voice: str = "alloy") -> str:
     print("Generated audio file:", audio_file_path)
     return str(audio_file_path)
 
-def background_generate_audio(story_id: int, page_number: int, page_content: str, voice: str = "alloy"):
+def background_generate_audio(story_id: int, page_number: str, page_content: str, voice: str = "ash"):
     """
     Background task to generate audio for a given page and update its status in TinyDB.
     """
@@ -186,7 +187,7 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         print("Generated Prompt:", prompt)
         
         response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",  # Adjust model as needed
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant generating children's stories."},
                 {"role": "user", "content": prompt}
@@ -196,26 +197,29 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_content = response.choices[0].message.content
         print("Story Content:", story_content)
         story_data = json.loads(story_content)
-        
-        # Save the story as a JSON file (optional for persistence)
-        # os.makedirs("stories", exist_ok=True)
-        # story_id = len(os.listdir("stories")) + 1
-        # with open(f"stories/{story_id}.json", "w") as f:
-        #     json.dump(story_data, f)
 
+        # Save the story in TinyDB instead of a file
         story_id = stories_table.insert(story_data)
-        
-        # Initialize video generation status for each page in TinyDB
+
+        # Initialize video & audio generation status in TinyDB
         pages_status = {}
-        pages = story_data.get("pages", [])
-        for i, page in enumerate(pages, start=1):
-            pages_status[i] = {"content": page, "video_url": None, "error": None}
+        for i, page in enumerate(story_data.get("pages", []), start=1):
+            pages_status[str(i)] = {
+                "content": page,
+                "video_url": None,
+                "audio_url": None,
+                "error": None
+            }
+        
+        # Insert the initialized status into both TinyDB tables
         videos_table.insert({"story_id": story_id, "pages": pages_status})
-        
-        # Define video style (could also be provided by the frontend)
+        audios_table.insert({"story_id": story_id, "pages": pages_status})
+
+        # Define video style
         style = "3d animated cartoon"
-        
-        # Schedule background tasks for each page's video generation
+        default_voice = "ash"
+
+        # Launch Both Video & Audio Generation in Parallel
         for page_number, page_info in pages_status.items():
             background_tasks.add_task(
                 background_generate_video,
@@ -225,17 +229,6 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 page_info["content"],
                 style
             )
-
-        # Initialize audio generation status for each page in TinyDB
-        audio_pages_status = {}
-        for i, page in enumerate(pages, start=1):
-            # Use string keys to match TinyDB's JSON format
-            audio_pages_status[str(i)] = {"content": page, "audio_url": None, "error": None}
-        audios_table.insert({"story_id": story_id, "pages": audio_pages_status})
-        
-        # Schedule background tasks for audio generation for each page
-        default_voice = "alloy"
-        for page_number, page_info in audio_pages_status.items():
             background_tasks.add_task(
                 background_generate_audio,
                 story_id,
@@ -243,14 +236,12 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 page_info["content"],
                 default_voice
             )
-        
-        # Return the story data and story_id; the frontend can poll /story_video/{story_id} for video updates.
+
         return {"story_id": story_id, **story_data}
     
     except Exception as e:
         print("Error in create_story endpoint:", e)
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/story/{story_id}")
 async def get_story(story_id: int):
@@ -261,7 +252,7 @@ async def get_story(story_id: int):
         raise HTTPException(status_code=404, detail="Story not found")
 
 @app.get("/story_video/{story_id}/{page_number}")
-async def get_story_video_page(story_id: int, page_number: int):
+async def get_story_video_page(story_id: int, page_number: str):
     Video = Query()
     record = videos_table.get(Video.story_id == story_id)
     if record:
@@ -275,14 +266,13 @@ async def get_story_video_page(story_id: int, page_number: int):
         raise HTTPException(status_code=404, detail=f"Story video information not found for story {story_id}")
 
 @app.get("/story_audio/{story_id}/{page_number}")
-async def get_story_audio_page(story_id: int, page_number: int):
+async def get_story_audio_page(story_id: int, page_number: str):
     Audio = Query()
     record = audios_table.get(Audio.story_id == story_id)
     if record:
         pages = record.get("pages", {})
-        key = str(page_number)
-        if key in pages:
-            return pages[key]
+        if page_number in pages:
+            return pages[page_number]
         else:
             raise HTTPException(status_code=404, detail=f"Page {page_number} not found for story {story_id}")
     else:
@@ -314,7 +304,8 @@ async def get_profile(profile_id: int):
 async def debug_db():
     return {
         "profiles": profile_table.all(),
-        "story_videos": videos_table.all()
+        "story_videos": videos_table.all(),
+        "audios": audios_table.all()
     }
 
 
