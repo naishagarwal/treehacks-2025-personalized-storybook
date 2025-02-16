@@ -10,7 +10,7 @@ const Saved = () => {
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/saved-stories');
+        const response = await fetch('http://localhost:8000/api/saved_stories');
         if (!response.ok) throw new Error('Failed to fetch stories');
         const data = await response.json();
         setStories(data);
