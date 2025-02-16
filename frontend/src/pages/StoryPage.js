@@ -14,8 +14,7 @@ const StoryPage = () => {
       const response = await fetch(`http://localhost:8000/story_video/${storyId}/${pageNumber}`);
       const data = await response.json();
       
-      if (data.error) {
-        setError(data.error);
+      if (data.error || !data.content || !data.video_url) {
         return null;
       }
 

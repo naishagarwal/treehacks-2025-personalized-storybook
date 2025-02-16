@@ -43,7 +43,7 @@ const Profile = () => {
   return (
     <div>
     <NavBar />
-    <div className="min-h-screen bg-[#050200] flex items-center justify-center">
+    <div className="h-full bg-[#050200] flex items-center justify-center">
       <div className="p-6 rounded-md w-1/3 space-y-5">
         <h1 className="text-2xl text-center font-light mb-6">Reader Profile</h1>
 
@@ -93,11 +93,11 @@ const Profile = () => {
 
         {/* Race Input */}
         <div className="flex justify-between items-center">
-          <label htmlFor="gender" className="text-sm">race (optional)</label>
+          <label htmlFor="race" className="text-sm">race (optional)</label>
           <input
-            id="gender"
+            id="race"
             type="text"
-            value={gender}
+            value={race}
             onChange={(e) => setRace(e.target.value)}
             className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />

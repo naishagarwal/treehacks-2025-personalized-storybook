@@ -28,13 +28,15 @@ def generate_story_prompt(user_input, child_profile_info):
     race = child_profile_info["race"]
     interests = child_profile_info["interests"]
     
-    prompt = f"""Generate a story with the following input from a parent: {user_input}. 
-    They are telling this story to {name}, a {age} year old {gender} from {location} who is {race} and enjoys {interests}. 
+    prompt = f"""Generate a story with the following input: {user_input}. 
+    This story is being told to {name}, a {age} year old {gender} from {location} who is {race} and enjoys {interests}. 
     Please provide an appropriate children's story given this information, and make it personalized to {name}. This should not include any role-playing with you as the parent, just the 
     story.
     Additionally, please divide up the story into multiple pages, just like a regular children's book. Return the final output in a JSON format,
-    where the keys are "story" and "pages", and the values are the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the story. Besides these elements,
-    there should be no other additional output. I should be able to use the command json.loads(output) to get the story and list of pages.
+    where the keys are "story" and "pages", and the values are a short title for the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the text you return, just the actual content. Besides these elements,
+    there should be no other additional output. I should be able to use the command json.loads(output) to get the story title and the list of pages. That means "pages" should simply map to a list of strings, with each string being the text for the page.
+    Try to ensure the story has an overarching, interesting plot. Use language appropriate for children's stories,
+    with repetitive phrasing where applicable and some challenge words appropriate for their age.
     """
     
     return prompt

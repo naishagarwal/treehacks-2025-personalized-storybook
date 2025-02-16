@@ -53,15 +53,17 @@ class StoryRequest(BaseModel):
     child_profile: Profile
 
 def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
-    return f"""Generate a story with the following input from a parent: {user_input}. 
-    They are telling this story to {child_profile.nickname}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. 
+    return f"""Generate a story with the following input: {user_input}. 
+    This story is being told to {child_profile.nickname}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. If any of those fields seem missing, ignore and 
+    proceed by making inferences or make the story broadly applicable.
     Please provide an appropriate children's story given this information, and make it personalized to {child_profile.nickname}. This should not include any role-playing with you as the parent, just the 
     story.
     Additionally, please divide up the story into multiple pages, just like a regular children's book. Return the final output in a JSON format,
-    where the keys are "story" and "pages", and the values are the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the story. Besides these elements,
-    there should be no other additional output. I should be able to use the command json.loads(output) to get the story and list of pages.
+    where the keys are "story" and "pages", and the values are a short title for the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the text you return, just the actual content. Besides these elements,
+    there should be no other additional output. I should be able to use the command json.loads(output) to get the story title and the list of pages. That means "pages" should simply map to a list of strings, with each string being the text for the page.
+    Try to ensure the story has an overarching, interesting plot. Use language appropriate for children's stories,
+    with repetitive phrasing where applicable and some challenge words appropriate for their age.
     """
-
 # Video Generation Helper Functions
 
 def generate_character_physical_description(story):
@@ -78,10 +80,10 @@ def generate_character_physical_description(story):
 
   return response.choices[0].message.content
 
-def generate_video_for_page(story: str, page: str, style: str) -> str:
+def generate_video_for_page(physical_description: str, page: str, style: str) -> str:
     if isinstance(page, dict):
         page = page.get("content", str(page))
-    physical_description = generate_character_physical_description(story)
+
     starter_prompt = (
         f"Please generate a video for the following page, in a {style} style. "
         f"If the page involves the character, use this physical description: {physical_description}. "
@@ -98,19 +100,17 @@ def generate_video_for_page(story: str, page: str, style: str) -> str:
             completed = True
         elif generation.state == "failed":
             raise RuntimeError(f"Video generation failed: {generation.failure_reason}")
-        print("Video generation in progress for page...")
-        time.sleep(3)
     
     video_url = generation.assets.video
     print("Generated video URL:", video_url)
     return video_url
 
-def background_generate_video(story_id: int, story: str, page_number: int, page_content: str, style: str):
+def background_generate_video(story_id: int, description: str, page_number: int, page_content: str, style: str):
     """
     Background task to generate a video for a single page and update its status in TinyDB.
     """
     try:
-        video_url = generate_video_for_page(story, page_content, style)
+        video_url = generate_video_for_page(description, page_content, style)
         Video = Query()
         record = videos_table.get(Video.story_id == story_id)
         if record:
@@ -184,7 +184,6 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 {"role": "user", "content": prompt}
             ]
         )
-        print("OpenAI Response:", response)
         story_content = response.choices[0].message.content
         print("Story Content:", story_content)
         story_data = json.loads(story_content)
@@ -197,20 +196,25 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         
         # Initialize video generation status for each page in TinyDB
         pages_status = {}
+        title = story_data.get("story")
         pages = story_data.get("pages", [])
+        
+        character_description = generate_character_physical_description(" ".join(pages))
+
         for i, page in enumerate(pages, start=1):
             pages_status[i] = {"content": page, "video_url": None, "error": None}
-        videos_table.insert({"story_id": story_id, "pages": pages_status})
+
+        videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
         
         # Define video style (could also be provided by the frontend)
-        style = "3d animated cartoon"
+        style = "illustrated storybook art"
         
         # Schedule background tasks for each page's video generation
         for page_number, page_info in pages_status.items():
             background_tasks.add_task(
                 background_generate_video,
                 story_id,
-                story_data.get("story", ""),
+                character_description,
                 page_number,
                 page_info["content"],
                 style
