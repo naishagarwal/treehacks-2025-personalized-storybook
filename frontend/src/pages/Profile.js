@@ -5,14 +5,16 @@ const Profile = () => {
   const [age, setAge] = useState('');
   const [location, setLocation] = useState('');
   const [gender, setGender] = useState('');
+  const [race, setRace] = useState('');
   const [interests, setInterests] = useState('');
 
   const handleSave = async () => {
     const profileData = {
       nickname,
-      age,
+      age: Number(age), // Ensure age is a number
       location,
       gender,
+      race,           // New race field added here
       interests,
     };
 
@@ -26,6 +28,9 @@ const Profile = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        // Optionally, store the profile ID for later use
+        localStorage.setItem("profile_id", data.profile_id);
         alert('Profile saved successfully!');
       } else {
         alert('Failed to save profile. Please try again.');
@@ -85,6 +90,18 @@ const Profile = () => {
             id="gender"
             value={gender}
             onChange={(e) => setGender(e.target.value)}
+            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+          />
+        </div>
+
+        {/* Race Input */}
+        <div>
+          <label htmlFor="race" className="block text-xl mb-2">Race</label>
+          <input
+            type="text"
+            id="race"
+            value={race}
+            onChange={(e) => setRace(e.target.value)}
             className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
           />
         </div>
