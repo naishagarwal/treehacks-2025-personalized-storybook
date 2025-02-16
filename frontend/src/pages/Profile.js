@@ -8,20 +8,12 @@ const Profile = () => {
   const [interests, setInterests] = useState('');
 
   const handleSave = async () => {
-    const profileData = {
-      nickname,
-      age,
-      location,
-      gender,
-      interests,
-    };
+    const profileData = { nickname, age, location, gender, interests };
 
     try {
       const response = await fetch('/api/save_details', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData),
       });
 
@@ -37,75 +29,68 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-12 font-serif">
-      <h1 className="text-3xl mb-6">Profile</h1>
-      
-      <div className="space-y-4">
-        {/* Nickname Input */}
-        <div>
-          <label htmlFor="nickname" className="block text-xl mb-2">Nickname</label>
+    <div className="min-h-screen bg-[#0d0403] flex items-center justify-center">
+      <div className="p-6 rounded-md w-80 space-y-4">
+        <h1 className="text-2xl text-center font-light mb-6">Reader Profile</h1>
+
+        <div className="flex justify-between items-center">
+          <label htmlFor="nickname" className="text-sm">name/nickname</label>
           <input
-            type="text"
             id="nickname"
+            type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-40 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
-        {/* Age Input */}
-        <div>
-          <label htmlFor="age" className="block text-xl mb-2">Age</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="age" className="text-sm">age</label>
           <input
-            type="number"
             id="age"
+            type="number"
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-30 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
-        {/* Location Input (Optional) */}
-        <div>
-          <label htmlFor="location" className="block text-xl mb-2">Location (Optional)</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="location" className="text-sm">location (optional)</label>
           <input
-            type="text"
             id="location"
+            type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-40 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
-        {/* Gender Input (Optional) */}
-        <div>
-          <label htmlFor="gender" className="block text-xl mb-2">Gender (Optional)</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="gender" className="text-sm">gender (optional)</label>
           <input
-            type="text"
             id="gender"
+            type="text"
             value={gender}
             onChange={(e) => setGender(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
-        {/* Interests Input */}
-        <div>
-          <label htmlFor="interests" className="block text-xl mb-2">Interests</label>
+        <div className="flex flex-col">
+          <label htmlFor="interests" className="text-sm mb-1">interests</label>
           <textarea
             id="interests"
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
-            rows="6"
+            className="w-90 h-24 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
-        
-        {/* Save Button */}
-        <div>
+
+        <div className="flex justify-center">
           <button
             onClick={handleSave}
-            className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="mt-4 px-6 py-2 border border-white text-white font-serif rounded-md hover:bg-white/10 transition-colors"
           >
             Save
           </button>
