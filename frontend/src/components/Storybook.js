@@ -31,7 +31,7 @@ const Storybook = ({ storyPages, onPageRequest }) => {
         }
         return prev + 1;
       });
-    }, 65);
+    }, 180);
   };
 
   const stopReading = () => {
@@ -123,7 +123,7 @@ const Storybook = ({ storyPages, onPageRequest }) => {
   return (
     <div className="h-9/10 flex flex-col px-8 py-6">
       <div className="flex-1 relative">
-        <div className="absolute z-10 left-16 top-1/4 w-1/3">
+        <div className="absolute z-10 left-16 w-1/3">
           <div className="text-3xl font-light leading-relaxed tracking-wide text-white/90 font-serif mb-12">
             <AnimatedText text={currentStory.text} />
           </div>

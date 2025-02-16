@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import { ReactComponent as MicIcon } from '../assets/mic.svg'; // Adjust the path to your SVG file
 
 const Generate = () => {
   const [input, setInput] = useState("");
@@ -8,6 +9,10 @@ const Generate = () => {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // Ref to accumulate audio chunks
+  const audioChunksRef = useRef([]);
+  const mediaRecorderRef = useRef(null);
 
   // Fetch profile details on component mount
   useEffect(() => {
@@ -57,18 +62,61 @@ const Generate = () => {
     }
   };
 
-  // Simple voice input
-  const handleVoiceInputStart = () => {
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.onresult = (event) => {
-      setInput(event.results[0][0].transcript);
+  // Start recording voice
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+
+    // Clear the previous audio chunks when starting a new recording
+    audioChunksRef.current = [];
+
+    recorder.ondataavailable = (e) => {
+      // Accumulate the audio chunks in the ref
+      audioChunksRef.current.push(e.data);
     };
-    recognition.start();
+
+    recorder.onstop = () => {
+      // Create the audio blob from accumulated chunks
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mpeg' });
+      // Send the audio to the backend
+      transcribeAudio(audioBlob);
+    };
+
+    recorder.start();
+    mediaRecorderRef.current = recorder;
+    setIsRecording(true);
   };
 
-  const handleVoiceInputEnd = () => {
-    setIsRecording(false);
+  // Stop recording and transcribe audio
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      setIsRecording(false);
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  // Send audio to the backend for transcription
+  const transcribeAudio = async (audioBlob) => {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'audio.mp3');
+
+    try {
+      const response = await fetch("http://localhost:8000/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.transcription) {
+        setInput(data.transcription); // Set the transcribed text in input
+        handleGenerate();
+      } else {
+        alert("Failed to transcribe audio.");
+      }
+    } catch (error) {
+      console.error("Error transcribing audio:", error);
+      alert("Failed to transcribe audio.");
+    }
   };
 
   return (
@@ -87,15 +135,13 @@ const Generate = () => {
 
         {/* Speak button */}
         <button
-          onMouseDown={() => {
-            setIsRecording(true);
-            handleVoiceInputStart();
-          }}
-          onMouseUp={handleVoiceInputEnd}
-          onTouchStart={() => setIsRecording(true)}
-          onTouchEnd={handleVoiceInputEnd}
+          onMouseDown={startRecording}
+          onMouseUp={stopRecording}
+          onTouchStart={startRecording}
+          onTouchEnd={stopRecording}
           className={`mb-4 px-6 py-3 border-2 border-white rounded-full ${isRecording ? 'bg-red-500' : 'bg-transparent'} transition-all`}
         >
+          <MicIcon className="w-9 h-9 text-white items-center" />
           Speak
         </button>
 
@@ -103,11 +149,9 @@ const Generate = () => {
         <button
           onClick={handleGenerate}
           disabled={isLoading}
-          className={`px-6 py-3 border-2 border-white rounded-full transition-colors ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-yellow-500'
-          }`}
+          className={`px-6 py-3 border-2 border-white rounded-full transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-yellow-500'}`}
         >
-          {isLoading ? "Generating..." : "Generate Story"}
+          {isLoading ? "Generating..." : "Create storybook"}
         </button>
       </div>
     </div>
