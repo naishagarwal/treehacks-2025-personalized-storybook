@@ -205,12 +205,14 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         character_description = generate_character_physical_description(" ".join(pages))
 
         for i, page in enumerate(pages, start=1):
-            pages_status[i] = {"content": page, "video_url": None, "error": None}
+            pages_status[i] = {"content": page, "video_url": None, "audio_url": None, "error": None}
 
         videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
+        audios_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
         
         # Define video style (could also be provided by the frontend)
         style = "illustrated storybook art"
+        default_voice = "ash"
         
         # Schedule background tasks for each page's video generation
         for page_number, page_info in pages_status.items():
