@@ -195,11 +195,10 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_data = json.loads(story_content)
 
         # Save the story in TinyDB instead of a file
-        stories_table.insert(story_data)
+        story_id = stories_table.insert(story_data)
 
         # Initialize video & audio generation status in TinyDB
         pages_status = {}
-        story_id = story_data.get("story_id")
         title = story_data.get("story")
         pages = story_data.get("pages", [])
         
