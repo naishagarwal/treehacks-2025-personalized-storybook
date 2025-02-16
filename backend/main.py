@@ -42,7 +42,6 @@ AUDIO_DIR.mkdir(exist_ok=True)
 # Database initialization and table creation
 db = TinyDB('db.json')
 videos_table = db.table("page_videos")
-audios_table = db.table("page_audios")
 profile_table = db.table("profiles")
 stories_table = db.table("stories")
 
@@ -135,46 +134,6 @@ def background_generate_video(story_id: int, description: str, page_number: int,
 
 ## AUDIO GENERATION FUNCTIONS
 
-def generate_audio_for_page(page_text: str, voice: str = "alloy") -> str:
-    """
-    Generate an audio file (MP3) for the given page text using OpenAI's TTS API.
-    Returns the file path (as string) of the generated audio.
-    """
-    audio_filename = f"speech_{uuid.uuid4().hex}.mp3"
-    audio_file_path = AUDIO_DIR / audio_filename
-
-    response = openai_client.audio.speech.create(
-        model="tts-1",
-        voice=voice,
-        input=page_text
-    )
-    response.stream_to_file(audio_file_path)
-    print("Generated audio file:", audio_file_path)
-    return str(audio_file_path)
-
-def background_generate_audio(story_id: int, page_number: str, page_content: str, voice: str = "ash"):
-    """
-    Background task to generate audio for a given page and update its status in TinyDB.
-    """
-    try:
-        audio_url = generate_audio_for_page(page_content, voice)
-        Audio = Query()
-        record = audios_table.get(Audio.story_id == story_id)
-        if record:
-            pages = record.get("pages", {})
-            pages[str(page_number)]["audio_url"] = audio_url
-            audios_table.update({"pages": pages}, Audio.story_id == story_id)
-            print(f"Updated story {story_id}, page {page_number} with audio URL: {audio_url}")
-    except Exception as e:
-        Audio = Query()
-        record = audios_table.get(Audio.story_id == story_id)
-        if record:
-            pages = record.get("pages", {})
-            pages[str(page_number)]["error"] = str(e)
-            audios_table.update({"pages": pages}, Audio.story_id == story_id)
-            print(f"Error for story {story_id}, page {page_number} audio: {e}")
-
-    
 
 @app.post("/generate")
 async def create_story(request: StoryRequest, background_tasks: BackgroundTasks):
@@ -205,11 +164,9 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         character_description = generate_character_physical_description(" ".join(pages))
 
         for i, page in enumerate(pages, start=1):
-            pages_status[i] = {"content": page, "video_url": None, "audio_url": None, "error": None}
+            pages_status[i] = {"content": page, "video_url": None, "error": None}
 
-        videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
-        audios_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
-        
+        videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})        
         # Define video style (could also be provided by the frontend)
         style = "illustrated storybook art"
         default_voice = "ash"
@@ -246,11 +203,24 @@ async def get_story(story_id: int):
     else:
         raise HTTPException(status_code=404, detail="Story not found")
 
-@app.get("/get_saved_stories")
+@app.get("/api/saved_stories")
 async def get_saved_stories():
-    stories = stories_table.all()
-    story_list = [{"story_id": story.doc_id, "title": story["title"]} for story in stories]
-    return story_list
+    # Fetch all the stories from the page_videos table
+    stories = []
+    
+    for video in videos_table.all():
+        story_id = video['story_id']
+        
+        # Check if title exists in the video entry, else set a default title
+        story_title = video.get('title', f"Story {story_id} Title")
+        
+        # Add the story to the list
+        stories.append({
+            "story_id": story_id,
+            "title": story_title
+        })
+    
+    return stories
 
 @app.get("/story_video/{story_id}/{page_number}")
 async def get_story_video_page(story_id: int, page_number: str):
@@ -278,14 +248,13 @@ async def get_story_audio_page(request: TextRequest):
     try:
         # Make the request to OpenAI API
         response = openai_client.audio.speech.create(
-            model="tts-1",  # or your specific model
-            voice="ash",  # ensure this matches your available voices
+            model="tts-1",
+            voice="ash", 
             input=text
         )
         if response.content:
             audio_data = response.content  # Directly get the binary audio data
 
-            # You can change the media_type if you request a different format (e.g., "audio/wav")
             return Response(
                 content=audio_data,
                 media_type="audio/mp3"  # Change this according to the response format you choose
@@ -322,8 +291,7 @@ async def get_profile(profile_id: int):
 async def debug_db():
     return {
         "profiles": profile_table.all(),
-        "story_videos": videos_table.all(),
-        "audios": audios_table.all()
+        "story_videos": videos_table.all()
     }
 
 

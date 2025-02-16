@@ -44,6 +44,7 @@
     "page_videos": {
         "1": {
             "story_id": 3,
+            "title": "Emily Stands Tall",
             "pages": {
                 "1": {
                     "content": "One day, while Emily was at the park playing with her friends, she overheard some older kids making fun of her favorite dessert, cupcakes. They were saying mean things and laughing at her love for them.",
@@ -74,6 +75,7 @@
         },
         "2": {
             "story_id": 4,
+            "title": "Anna's Generosity",
             "pages": {
                 "1": {
                     "content": "As the story goes, there was a harsh winter in the village, and food supplies were running low. Many families were struggling to feed themselves, including Anna's family. Despite their own difficulties, Anna's family always shared whatever little they had with their neighbors.",
@@ -119,42 +121,6 @@
                 "3": {
                     "content": "Her grandmother handed Mariam a beautiful necklace and said, \"Mariam, this necklace has been passed down through generations in our family. It is very precious. I want you to keep it safe and never lose it. Remember, honesty is the best policy.\"",
                     "video_url": "https://storage.cdn-luma.com/dream_machine/a35898bb-3585-46b6-aa5a-76441bb317ca/3fe28f5d-860e-4d0d-8f4e-83c4d42f5dff_resultc66ddee34e5584c1.mp4",
-                    "error": null
-                }
-            }
-        },
-        "4": {
-            "story_id": 14,
-            "title": "The Boy Who Found Family",
-            "pages": {
-                "1": {
-                    "content": "Once upon a time, in a small village nestled between the mountains, there lived a boy named Leo. Leo spent his days exploring the woods, climbing trees, and chasing butterflies. But despite all the fun he had, he often felt lonely.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/db1cccf3-21a7-4fe5-880e-023f17dbe992/2696f2c4-4111-477e-90ef-54b6cab60a04_result32a2f0468ac25863.mp4",
-                    "error": null
-                },
-                "2": {
-                    "content": "One day, while playing by the stream, Leo noticed a family of ducks swimming together. He watched as the ducklings followed their mother closely, learning to swim and find food. Leo realized how much he longed for a family of his own.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/ece87d20-c6e7-4384-880b-e224208d1182/386bf932-469e-4ad6-8dd5-0d78c9267542_result021a811172cdb4e5.mp4",
-                    "error": null
-                },
-                "3": {
-                    "content": "Determined to find his place, Leo set off on a journey to discover what family truly meant. Along the way, he met different animals who taught him valuable lessons about love, kindness, and belonging.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/9d137bcb-d87a-493a-b9e2-8119aeace9dc/5ee802f6-1d16-4c3a-a0f5-34d2feab2b15_resulta1f9c168e1233ac7.mp4",
-                    "error": null
-                },
-                "4": {
-                    "content": "From the wise owl who shared stories under the starry night sky to the playful squirrel who showed him the joy of sharing acorns, Leo learned that family was not just about blood relations, but about caring for and supporting each other.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/bf35eb0a-97da-45c0-a85f-6806a58ba609/728047d4-2316-4517-8e0d-d71a4b645637_resultd8a083f22379f40d.mp4",
-                    "error": null
-                },
-                "5": {
-                    "content": "As the days passed, Leo's heart felt full knowing that he was surrounded by friends who loved him just the way he was. He realized that family comes in all shapes and sizes, and what mattered most was the bonds of friendship and love that held them together.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/28f7b8f9-aa8b-4c14-ba27-f9afddbcbc5a/ee8717e6-e912-4d42-a2fd-8c7a9ecf3faa_result1ef7e35ed65bf2a9.mp4",
-                    "error": null
-                },
-                "6": {
-                    "content": "And so, with a grateful heart and a joyful spirit, Leo returned to his village, eager to share his newfound wisdom with everyone he met. From that day on, he knew that he was never truly alone as long as he had his family of friends by his side.",
-                    "video_url": "https://storage.cdn-luma.com/dream_machine/5096bd16-a7d2-429c-bbd6-166f59f4934a/2cffb06a-2d4e-4ea8-a44e-72926a866bc9_result28fc6e32beac69ba.mp4",
                     "error": null
                 }
             }
