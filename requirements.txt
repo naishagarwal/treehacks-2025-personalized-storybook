@@ -1,2 +1,4 @@
 lumaai
 google-genai
+openai
+tinydb
