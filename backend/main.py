@@ -11,6 +11,7 @@ import time
 from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
+from pathlib import Path
 
 app = FastAPI()
 
@@ -34,11 +35,16 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Directories for audio files (since they are being stored locally)
+AUDIO_DIR = Path("tts_outputs")
+AUDIO_DIR.mkdir(exist_ok=True)
+
 # Database initialization and table creation
 db = TinyDB('db.json')
 videos_table = db.table("page_videos")
 audios_table = db.table("page_audios")
 profile_table = db.table("profiles")
+stories_table = db.table("stories")
 
 class Profile(BaseModel):
     nickname: str
@@ -115,7 +121,7 @@ def background_generate_video(story_id: int, description: str, page_number: int,
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[str(page_number)]["video_url"] = video_url
+            pages[page_number]["video_url"] = video_url
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Updated story {story_id}, page {page_number} with video URL.")
     except Exception as e:
@@ -123,7 +129,7 @@ def background_generate_video(story_id: int, description: str, page_number: int,
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[str(page_number)]["error"] = str(e)
+            pages[page_number]["error"] = str(e)
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Error for story {story_id}, page {page_number}: {e}")
 
@@ -146,7 +152,7 @@ def generate_audio_for_page(page_text: str, voice: str = "alloy") -> str:
     print("Generated audio file:", audio_file_path)
     return str(audio_file_path)
 
-def background_generate_audio(story_id: int, page_number: int, page_content: str, voice: str = "alloy"):
+def background_generate_audio(story_id: int, page_number: str, page_content: str, voice: str = "ash"):
     """
     Background task to generate audio for a given page and update its status in TinyDB.
     """
@@ -178,7 +184,7 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         print("Generated Prompt:", prompt)
         
         response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",  # Adjust model as needed
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant generating children's stories."},
                 {"role": "user", "content": prompt}
@@ -187,14 +193,11 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_content = response.choices[0].message.content
         print("Story Content:", story_content)
         story_data = json.loads(story_content)
-        
-        # Save the story as a JSON file (optional for persistence)
-        os.makedirs("stories", exist_ok=True)
-        story_id = len(os.listdir("stories")) + 1
-        with open(f"stories/{story_id}.json", "w") as f:
-            json.dump(story_data, f)
-        
-        # Initialize video generation status for each page in TinyDB
+
+        # Save the story in TinyDB instead of a file
+        story_id = stories_table.insert(story_data)
+
+        # Initialize video & audio generation status in TinyDB
         pages_status = {}
         title = story_data.get("story")
         pages = story_data.get("pages", [])
@@ -202,12 +205,14 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         character_description = generate_character_physical_description(" ".join(pages))
 
         for i, page in enumerate(pages, start=1):
-            pages_status[i] = {"content": page, "video_url": None, "error": None}
+            pages_status[i] = {"content": page, "video_url": None, "audio_url": None, "error": None}
 
         videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
+        audios_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})
         
         # Define video style (could also be provided by the frontend)
         style = "illustrated storybook art"
+        default_voice = "ash"
         
         # Schedule background tasks for each page's video generation
         for page_number, page_info in pages_status.items():
@@ -219,22 +224,26 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 page_info["content"],
                 style
             )
-        
-        # Return the story data and story_id; the frontend can poll /story_video/{story_id} for video updates.
+            background_tasks.add_task(
+                background_generate_audio,
+                story_id,
+                int(page_number),
+                page_info["content"],
+                default_voice
+            )
+
         return {"story_id": story_id, **story_data}
     
     except Exception as e:
         print("Error in create_story endpoint:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/story/{story_id}")
 async def get_story(story_id: int):
-    try:
-        with open(f"stories/{story_id}.json", "r") as f:
-            story_data = json.load(f)
-        return story_data
-    except FileNotFoundError:
+    story = stories_table.get(doc_id=story_id)
+    if story:
+        return story
+    else:
         raise HTTPException(status_code=404, detail="Story not found")
 
 @app.get("/story_video/{story_id}/{page_number}")
@@ -252,7 +261,19 @@ async def get_story_video_page(story_id: int, page_number: str):
     else:
         raise HTTPException(status_code=404, detail=f"Story video information not found for story {story_id}")
 
-    
+@app.get("/story_audio/{story_id}/{page_number}")
+async def get_story_audio_page(story_id: int, page_number: str):
+    Audio = Query()
+    record = audios_table.get(Audio.story_id == story_id)
+    if record:
+        pages = record.get("pages", {})
+        if page_number in pages:
+            return pages[page_number]
+        else:
+            raise HTTPException(status_code=404, detail=f"Page {page_number} not found for story {story_id}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Story audio information not found for story {story_id}")
+
 
 @app.post("/api/save_details")
 async def save_details(profile: Profile):
@@ -279,7 +300,8 @@ async def get_profile(profile_id: int):
 async def debug_db():
     return {
         "profiles": profile_table.all(),
-        "story_videos": videos_table.all()
+        "story_videos": videos_table.all(),
+        "audios": audios_table.all()
     }
 
 
