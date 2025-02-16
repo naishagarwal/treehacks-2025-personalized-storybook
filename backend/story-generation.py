@@ -75,3 +75,6 @@ page_list = json.loads(story) # json dictionary of the story and the pages
 # Save page_list into a json file
 with open('story.json', 'w') as f:
     json.dump(page_list, f)
+
+
+# generating story with specific page number
