@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -261,19 +261,35 @@ async def get_story_video_page(story_id: int, page_number: str):
     else:
         raise HTTPException(status_code=404, detail=f"Story video information not found for story {story_id}")
 
-@app.get("/story_audio/{story_id}/{page_number}")
-async def get_story_audio_page(story_id: int, page_number: str):
-    Audio = Query()
-    record = audios_table.get(Audio.story_id == story_id)
-    if record:
-        pages = record.get("pages", {})
-        if page_number in pages:
-            return pages[page_number]
-        else:
-            raise HTTPException(status_code=404, detail=f"Page {page_number} not found for story {story_id}")
-    else:
-        raise HTTPException(status_code=404, detail=f"Story audio information not found for story {story_id}")
+class TextRequest(BaseModel):
+    text: str
 
+@app.post("/api/audio")
+async def get_story_audio_page(request: TextRequest):
+    text = request.text
+    print(f"Received text: {text}")
+    
+    try:
+        # Make the request to OpenAI API
+        response = openai_client.audio.speech.create(
+            model="tts-1",  # or your specific model
+            voice="ash",  # ensure this matches your available voices
+            input=text
+        )
+        if response.content:
+            audio_data = response.content  # Directly get the binary audio data
+
+            # You can change the media_type if you request a different format (e.g., "audio/wav")
+            return Response(
+                content=audio_data,
+                media_type="audio/mp3"  # Change this according to the response format you choose
+            )
+        else:
+            return {"error": "No audio data found in the OpenAI response."}
+    
+    except Exception as e:
+        print(f"Error with OpenAI API: {e}")
+        return {"error": "Something went wrong with the OpenAI API."}
 
 @app.post("/api/save_details")
 async def save_details(profile: Profile):

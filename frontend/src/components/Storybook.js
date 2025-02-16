@@ -9,6 +9,7 @@ const Storybook = ({ storyPages, onPageRequest }) => {
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const progressTimer = useRef(null);
+  const audioRef = useRef(null);
 
   // Prefetch next page
   useEffect(() => {
@@ -37,6 +38,10 @@ const Storybook = ({ storyPages, onPageRequest }) => {
     setIsReading(false);
     clearInterval(progressTimer.current);
     setProgress(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   };
 
   useEffect(() => {
@@ -63,13 +68,41 @@ const Storybook = ({ storyPages, onPageRequest }) => {
     }
   };
 
+  // Fetch and play audio
+  const playAudio = async (text) => {
+    if (!text) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const audioUrl = URL.createObjectURL(blob);
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          audioRef.current.play();
+          startReading();
+        }
+      } else {
+        console.error('Failed to fetch audio');
+      }
+    } catch (error) {
+      console.error('Error fetching audio:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const currentStory = storyPages[currentPage];
   if (!currentStory) return null;
 
   const AnimatedText = ({ text }) => {
     const words = text.split(' ');
     const progressPerWord = 100 / words.length;
-    
     return (
       <span>
         {words.map((word, index) => (
@@ -97,7 +130,7 @@ const Storybook = ({ storyPages, onPageRequest }) => {
 
           <div className="flex gap-6">
             <button 
-              onClick={startReading}
+              onClick={() => playAudio(currentStory.text)}
               className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white/10 transition-colors"
               disabled={isLoading}
             >
@@ -143,6 +176,7 @@ const Storybook = ({ storyPages, onPageRequest }) => {
           ›
         </button>
       </div>
+      <audio ref={audioRef} />
     </div>
   );
 };

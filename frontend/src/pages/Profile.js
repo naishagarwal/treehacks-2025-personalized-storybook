@@ -110,7 +110,7 @@ const Profile = () => {
             id="interests"
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            className="w-90 h-24 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
+            className="w-full h-24 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
