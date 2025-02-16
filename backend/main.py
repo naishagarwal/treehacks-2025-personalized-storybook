@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -124,48 +124,52 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
     
 
 @app.post("/generate")
-async def create_story(request: StoryRequest):
+async def create_story(request: StoryRequest, background_tasks: BackgroundTasks):
     try:
-        # Log input data for debugging
-        print("User input:", request.user_input)
-        print("Child profile:", request.child_profile)
-        
+        # Generate story using OpenAI
         prompt = generate_story_prompt(request.user_input, request.child_profile)
         print("Generated Prompt:", prompt)
         
-        # Call the API in a try/except block to catch errors
-        try:
-            response = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",  # Consider testing with "gpt-3.5-turbo" if issues persist
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant generating children's stories."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            print("API Response:", response)
-        except Exception as api_error:
-            print("Error during OpenAI API call:", api_error)
-            raise HTTPException(status_code=500, detail=f"OpenAI API error: {api_error}")
-        
-        # Check that the response has the expected structure
-        if not response.choices or not response.choices[0].message:
-            raise HTTPException(status_code=500, detail="Invalid response structure from OpenAI API.")
-        
+        response = openai_client.chat.completions.create(
+            model="gpt-4-mini",  # Adjust model as needed
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant generating children's stories."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        print("OpenAI Response:", response)
         story_content = response.choices[0].message.content
         print("Story Content:", story_content)
+        story_data = json.loads(story_content)
         
-        # Attempt to parse the JSON output
-        try:
-            story_data = json.loads(story_content)
-        except Exception as json_error:
-            print("JSON parsing error:", json_error)
-            raise HTTPException(status_code=500, detail=f"Error parsing story JSON: {json_error}. Content received: {story_content}")
-        
-        # Save to a file with a unique ID (or use a database)
+        # Save the story as a JSON file (optional for persistence)
+        os.makedirs("stories", exist_ok=True)
         story_id = len(os.listdir("stories")) + 1
         with open(f"stories/{story_id}.json", "w") as f:
             json.dump(story_data, f)
-            
+        
+        # Initialize video generation status for each page in TinyDB
+        pages_status = {}
+        pages = story_data.get("pages", [])
+        for i, page in enumerate(pages, start=1):
+            pages_status[i] = {"content": page, "video_url": None, "error": None}
+        videos_table.insert({"story_id": story_id, "pages": pages_status})
+        
+        # Define video style (could also be provided by the frontend)
+        style = "3d animated cartoon"
+        
+        # Schedule background tasks for each page's video generation
+        for page_number, page_info in pages_status.items():
+            background_tasks.add_task(
+                background_generate_video,
+                story_id,
+                story_data.get("story", ""),
+                page_number,
+                page_info["content"],
+                style
+            )
+        
+        # Return the story data and story_id; the frontend can poll /story_video/{story_id} for video updates.
         return {"story_id": story_id, **story_data}
     
     except Exception as e:
@@ -181,6 +185,21 @@ async def get_story(story_id: int):
         return story_data
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Story not found")
+
+@app.get("/story_video/{story_id}/{page_number}")
+async def get_story_video_page(story_id: int, page_number: int):
+    Video = Query()
+    record = videos_table.get(Video.story_id == story_id)
+    if record:
+        pages = record.get("pages", {})
+        # Check if the specific page exists
+        if page_number in pages:
+            return pages[page_number]
+        else:
+            raise HTTPException(status_code=404, detail=f"Page {page_number} not found for story {story_id}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Story video information not found for story {story_id}")
+
     
 
 @app.post("/api/save_details")
