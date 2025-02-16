@@ -30,7 +30,12 @@ const NavBar = ({ leftText = "generate new", centerText = "saved stories" }) => 
         
         {/* Profile icon */}
         <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
-          <div className="w-4 h-4 rounded-full border border-white"></div>
+            <Link 
+                to="/profile" // Link to the 'new' page
+                className="opacity-70 hover:opacity-100 cursor-pointer transition-opacity"
+            >
+            <div className="w-4 h-4 rounded-full border border-white"></div>
+          </Link>
         </div>
       </div>
     </div>
