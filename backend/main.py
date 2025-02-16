@@ -11,6 +11,7 @@ import time
 #from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
+from pathlib import Path
 
 app = FastAPI()
 
@@ -34,11 +35,18 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Directories for stories and audio files (since they are being stored locally)
+STORIES_DIR = Path("stories")
+STORIES_DIR.mkdir(exist_ok=True)
+AUDIO_DIR = Path("tts_outputs")
+AUDIO_DIR.mkdir(exist_ok=True)
+
 # Database initialization and table creation
 db = TinyDB('db.json')
 videos_table = db.table("page_videos")
 audios_table = db.table("page_audios")
 profile_table = db.table("profiles")
+stories_table = db.table("stories")
 
 class Profile(BaseModel):
     nickname: str
@@ -190,10 +198,12 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_data = json.loads(story_content)
         
         # Save the story as a JSON file (optional for persistence)
-        os.makedirs("stories", exist_ok=True)
-        story_id = len(os.listdir("stories")) + 1
-        with open(f"stories/{story_id}.json", "w") as f:
-            json.dump(story_data, f)
+        # os.makedirs("stories", exist_ok=True)
+        # story_id = len(os.listdir("stories")) + 1
+        # with open(f"stories/{story_id}.json", "w") as f:
+        #     json.dump(story_data, f)
+
+        story_id = stories_table.insert(story_data)
         
         # Initialize video generation status for each page in TinyDB
         pages_status = {}
@@ -215,6 +225,24 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 page_info["content"],
                 style
             )
+
+        # Initialize audio generation status for each page in TinyDB
+        audio_pages_status = {}
+        for i, page in enumerate(pages, start=1):
+            # Use string keys to match TinyDB's JSON format
+            audio_pages_status[str(i)] = {"content": page, "audio_url": None, "error": None}
+        audios_table.insert({"story_id": story_id, "pages": audio_pages_status})
+        
+        # Schedule background tasks for audio generation for each page
+        default_voice = "alloy"
+        for page_number, page_info in audio_pages_status.items():
+            background_tasks.add_task(
+                background_generate_audio,
+                story_id,
+                int(page_number),
+                page_info["content"],
+                default_voice
+            )
         
         # Return the story data and story_id; the frontend can poll /story_video/{story_id} for video updates.
         return {"story_id": story_id, **story_data}
@@ -226,11 +254,10 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
 
 @app.get("/story/{story_id}")
 async def get_story(story_id: int):
-    try:
-        with open(f"stories/{story_id}.json", "r") as f:
-            story_data = json.load(f)
-        return story_data
-    except FileNotFoundError:
+    story = stories_table.get(doc_id=story_id)
+    if story:
+        return story
+    else:
         raise HTTPException(status_code=404, detail="Story not found")
 
 @app.get("/story_video/{story_id}/{page_number}")
@@ -247,7 +274,20 @@ async def get_story_video_page(story_id: int, page_number: int):
     else:
         raise HTTPException(status_code=404, detail=f"Story video information not found for story {story_id}")
 
-    
+@app.get("/story_audio/{story_id}/{page_number}")
+async def get_story_audio_page(story_id: int, page_number: int):
+    Audio = Query()
+    record = audios_table.get(Audio.story_id == story_id)
+    if record:
+        pages = record.get("pages", {})
+        key = str(page_number)
+        if key in pages:
+            return pages[key]
+        else:
+            raise HTTPException(status_code=404, detail=f"Page {page_number} not found for story {story_id}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Story audio information not found for story {story_id}")
+
 
 @app.post("/api/save_details")
 async def save_details(profile: Profile):
