@@ -36,6 +36,7 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 # Database initialization and table creation
 db = TinyDB('db.json')
 videos_table = db.table("page_videos")
+audios_table = db.table("page_audios")
 profile_table = db.table("profiles")
 
 class Profile(BaseModel):
@@ -122,6 +123,48 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
             pages[page_number]["error"] = str(e)
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Error for story {story_id}, page {page_number}: {e}")
+
+## AUDIO GENERATION FUNCTIONS
+
+def generate_audio_for_page(page_text: str, voice: str = "alloy") -> str:
+    """
+    Generate an audio file (MP3) for the given page text using OpenAI's TTS API.
+    Returns the file path (as string) of the generated audio.
+    """
+    audio_filename = f"speech_{uuid.uuid4().hex}.mp3"
+    audio_file_path = AUDIO_DIR / audio_filename
+
+    response = openai_client.audio.speech.create(
+        model="tts-1",
+        voice=voice,
+        input=page_text
+    )
+    response.stream_to_file(audio_file_path)
+    print("Generated audio file:", audio_file_path)
+    return str(audio_file_path)
+
+def background_generate_audio(story_id: int, page_number: int, page_content: str, voice: str = "alloy"):
+    """
+    Background task to generate audio for a given page and update its status in TinyDB.
+    """
+    try:
+        audio_url = generate_audio_for_page(page_content, voice)
+        Audio = Query()
+        record = audios_table.get(Audio.story_id == story_id)
+        if record:
+            pages = record.get("pages", {})
+            pages[str(page_number)]["audio_url"] = audio_url
+            audios_table.update({"pages": pages}, Audio.story_id == story_id)
+            print(f"Updated story {story_id}, page {page_number} with audio URL: {audio_url}")
+    except Exception as e:
+        Audio = Query()
+        record = audios_table.get(Audio.story_id == story_id)
+        if record:
+            pages = record.get("pages", {})
+            pages[str(page_number)]["error"] = str(e)
+            audios_table.update({"pages": pages}, Audio.story_id == story_id)
+            print(f"Error for story {story_id}, page {page_number} audio: {e}")
+
     
 
 @app.post("/generate")
