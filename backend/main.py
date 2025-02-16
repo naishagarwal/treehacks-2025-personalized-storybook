@@ -289,8 +289,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
         print(f"Received file: {file.filename}, Content-Type: {file.content_type}")
         # Read the uploaded file into memory
         audio_data = await file.read()
-        print("read file")
-        audio_file = io.BytesIO(audio_data)  # Create an in-memory file
 
         # Transcribe using OpenAI Whisper
         print("whispering")
