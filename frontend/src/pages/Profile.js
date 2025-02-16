@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import NavBar from '../components/NavBar';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [nickname, setNickname] = useState('');
@@ -8,6 +9,7 @@ const Profile = () => {
   const [gender, setGender] = useState('');
   const [race, setRace] = useState('');
   const [interests, setInterests] = useState('');
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     const profileData = {
@@ -31,6 +33,7 @@ const Profile = () => {
         // Optionally, store the profile ID for later use
         localStorage.setItem("profile_id", data.profile_id);
         alert('Profile saved successfully!');
+        navigate(`/generate`);
       } else {
         alert('Failed to save profile. Please try again.');
       }
