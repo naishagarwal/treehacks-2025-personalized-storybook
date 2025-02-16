@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
-import { ReactComponent as MicIcon } from '../assets/mic.svg'; // Adjust the path to your SVG file
 
 const Generate = () => {
   const [input, setInput] = useState("");
@@ -109,7 +108,7 @@ const Generate = () => {
       const data = await response.json();
       if (data.transcription) {
         setInput(data.transcription); // Set the transcribed text in input
-        handleGenerate();
+        
       } else {
         alert("Failed to transcribe audio.");
       }
@@ -141,7 +140,6 @@ const Generate = () => {
           onTouchEnd={stopRecording}
           className={`mb-4 px-6 py-3 border-2 border-white rounded-full ${isRecording ? 'bg-red-500' : 'bg-transparent'} transition-all`}
         >
-          <MicIcon className="w-9 h-9 text-white items-center" />
           Speak
         </button>
 
@@ -151,7 +149,7 @@ const Generate = () => {
           disabled={isLoading}
           className={`px-6 py-3 border-2 border-white rounded-full transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:text-yellow-500'}`}
         >
-          {isLoading ? "Generating..." : "Create storybook"}
+          {isLoading ? "Generating..." : "Generate Story"}
         </button>
       </div>
     </div>
