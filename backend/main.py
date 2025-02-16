@@ -24,7 +24,7 @@ app.add_middleware(
 
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+#GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Initialize clients
@@ -32,7 +32,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Databse initialization and table creation
+# Database initialization and table creation
 db = TinyDB('db.json')
 videos_table = db.table("page_videos")
 profile_table = db.table("profiles")
@@ -131,7 +131,7 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         print("Generated Prompt:", prompt)
         
         response = openai_client.chat.completions.create(
-            model="gpt-4-mini",  # Adjust model as needed
+            model="gpt-3.5-turbo",  # Adjust model as needed
             messages=[
                 {"role": "system", "content": "You are a helpful assistant generating children's stories."},
                 {"role": "user", "content": prompt}
