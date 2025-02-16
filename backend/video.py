@@ -26,7 +26,7 @@ def generate_character_physical_description(story):
             {"role": "system", "content": "You are a helpful assistant generating children's stories."},
             {
                 "role": "user",
-                "content": "Please generate a physical description of the character in the following story. Include vivid description, enough to simulate the character in a video. Limit description to very concise direct physical attributes, including clothing. Here is the story: " + story
+                "content": "Please generate a physical description of the character in the following story. Include vivid description, enough to simulate the character in a video. Limit description to very concise direct physical attributes, including clothing if applicable. Here is the story: " + story
             }
         ]
     )
