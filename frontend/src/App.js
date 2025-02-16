@@ -9,6 +9,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Generate />} />
+        <Route path="/generate" element={<Generate />} />
         <Route path="/story/:storyId" element={<StoryPage />} />
         <Route path="/saved" element={<Saved />} />
         <Route path="/profile" element={<Profile />} />

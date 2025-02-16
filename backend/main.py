@@ -62,7 +62,7 @@ def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
     This story is being told to {child_profile.nickname}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. If any of those fields seem missing, ignore and 
     proceed by making inferences or make the story broadly applicable.
     Please provide an appropriate children's story given this information, and make it personalized to {child_profile.nickname}. This should not include any role-playing with you as the parent, just the 
-    story.
+    story. The characters in the story do not necessarily have to be the recipient, they can be new characters or animals as well.
     Additionally, please divide up the story into multiple pages, just like a regular children's book. Return the final output in a JSON format,
     where the keys are "story" and "pages", and the values are a short title for the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the text you return, just the actual content. Besides these elements,
     there should be no other additional output. I should be able to use the command json.loads(output) to get the story title and the list of pages. That means "pages" should simply map to a list of strings, with each string being the text for the page.
@@ -110,7 +110,7 @@ def generate_video_for_page(physical_description: str, page: str, style: str) ->
     print("Generated video URL:", video_url)
     return video_url
 
-def background_generate_video(story_id: int, description: str, page_number: int, page_content: str, style: str):
+def background_generate_video(story_id: int, description: str, page_number: str, page_content: str, style: str):
     """
     Background task to generate a video for a single page and update its status in TinyDB.
     """
@@ -154,54 +154,42 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_data = json.loads(story_content)
 
         # Save the story in TinyDB instead of a file
-        story_id = stories_table.insert(story_data)
 
         # Initialize video & audio generation status in TinyDB
         pages_status = {}
         title = story_data.get("story")
         pages = story_data.get("pages", [])
+        story_id = stories_table.insert({"title" : title})
+
         
         character_description = generate_character_physical_description(" ".join(pages))
 
         for i, page in enumerate(pages, start=1):
-            pages_status[i] = {"content": page, "video_url": None, "error": None}
+            pages_status[str(i)] = {"content": page, "video_url": None, "error": None}
 
         videos_table.insert({"story_id": story_id, "title" : title, "pages": pages_status})        
         # Define video style (could also be provided by the frontend)
         style = "illustrated storybook art"
-        default_voice = "ash"
-        
+
+        background_generate_video(story_id,character_description,"1",pages_status["1"]["content"],style)
+
         # Schedule background tasks for each page's video generation
         for page_number, page_info in pages_status.items():
-            background_tasks.add_task(
-                background_generate_video,
-                story_id,
-                character_description,
-                page_number,
-                page_info["content"],
-                style
-            )
-            background_tasks.add_task(
-                background_generate_audio,
-                story_id,
-                int(page_number),
-                page_info["content"],
-                default_voice
-            )
+            if page_number != "1":
+                background_tasks.add_task(
+                    background_generate_video,
+                    story_id,
+                    character_description,
+                    page_number,
+                    page_info["content"],
+                    style
+                )
 
         return {"story_id": story_id, **story_data}
     
     except Exception as e:
         print("Error in create_story endpoint:", e)
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/story/{story_id}")
-async def get_story(story_id: int):
-    story = stories_table.get(doc_id=story_id)
-    if story:
-        return story
-    else:
-        raise HTTPException(status_code=404, detail="Story not found")
 
 @app.get("/api/saved_stories")
 async def get_saved_stories():
