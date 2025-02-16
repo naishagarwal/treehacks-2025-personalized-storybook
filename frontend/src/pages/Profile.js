@@ -30,7 +30,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#050200] flex items-center justify-center">
-      <div className="p-6 rounded-md w-80 space-y-4">
+      <div className="p-6 rounded-md w-1/3 space-y-5">
         <h1 className="text-2xl text-center font-light mb-6">Reader Profile</h1>
 
         <div className="flex justify-between items-center">
@@ -40,7 +40,7 @@ const Profile = () => {
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="w-40 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
+            className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
@@ -51,7 +51,7 @@ const Profile = () => {
             type="number"
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            className="w-30 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
+            className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
@@ -62,7 +62,7 @@ const Profile = () => {
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-40 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
+            className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
