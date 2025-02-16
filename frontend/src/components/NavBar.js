@@ -10,7 +10,7 @@ const NavBar = ({ leftText = "generate new", centerText = "saved stories" }) => 
         <div className="flex gap-8 text-xl font-light tracking-wider">
           <div className="opacity-70 hover:opacity-100 cursor-pointer transition-opacity">
             <Link 
-                to="/" // Link to the 'new' page
+                to="/generate" // Link to the 'new' page
                 className="opacity-70 hover:opacity-100 cursor-pointer transition-opacity"
             >
             {leftText}
@@ -30,7 +30,7 @@ const NavBar = ({ leftText = "generate new", centerText = "saved stories" }) => 
         <div className="flex-1 mx-8 h-px bg-white/30" />
         
         {/* Profile icon */}
-        <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
+        <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
             <Link 
                 to="/profile" // Link to the 'new' page
                 className="opacity-70 hover:opacity-100 cursor-pointer transition-opacity"

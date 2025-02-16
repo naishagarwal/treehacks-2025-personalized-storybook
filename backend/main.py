@@ -8,7 +8,7 @@ import json
 import os
 from tinydb import TinyDB, Query
 import time
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
 from pathlib import Path
@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#load_dotenv()
+load_dotenv()
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 #GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -62,12 +62,12 @@ def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
     return f"""Generate a story with the following input: {user_input}. 
     This story is being told to {child_profile.nickname}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. If any of those fields seem missing, ignore and 
     proceed by making inferences or make the story broadly applicable.
-    Please provide an appropriate children's story given this information, and make it personalized to {child_profile.nickname}. This should not include any role-playing with you as the parent, just the 
-    story. The characters in the story do not necessarily have to be the recipient, they can be new characters or animals as well.
+    Please provide an appropriate children's story given this information, and make it personalized for either the listener's background or interests when possible. This should not include any role-playing with you as the parent, just the 
+    story. The characters in the story do not necessarily have to be the listener, they can be new characters or animals or creatures as well. Try to show more than tell, and use onomatopoeia occassionally where it makes sense.
     Additionally, please divide up the story into multiple pages, just like a regular children's book. Return the final output in a JSON format,
     where the keys are "story" and "pages", and the values are a short title for the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the text you return, just the actual content. Besides these elements,
     there should be no other additional output. I should be able to use the command json.loads(output) to get the story title and the list of pages. That means "pages" should simply map to a list of strings, with each string being the text for the page.
-    Try to ensure the story has an overarching, interesting plot. Use language appropriate for children's stories,
+    Try to ensure the story has an overarching, interesting plot with a relevant story arc. Be subtle about the lessons taught, opting to have an engaging story over overexplaining. Use language appropriate for children's stories,
     with repetitive phrasing where applicable and some challenge words appropriate for their age.
     """
 # Video Generation Helper Functions
@@ -282,19 +282,17 @@ async def transcribe_audio(file: UploadFile = File(...)):
     """
     try:
         print(f"Received file: {file.filename}, Content-Type: {file.content_type}")
-        # Read the uploaded file into memory
         audio_data = await file.read()
 
-        # Transcribe using OpenAI Whisper
-        print("whispering")
         response = openai_client.audio.transcriptions.create(
             model="whisper-1",
             file=("audio.mp3", audio_data, "audio/mpeg")
         )
-
+        print(response.text)
         return {"transcription": response.text}
 
     except Exception as e:
+        print(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
     
