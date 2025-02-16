@@ -1,0 +1,75 @@
+/* Home Page Layout */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+    /* Typewriter animation */
+    @keyframes typewriter {
+        from {
+        width: 0;
+        }
+        to {
+        width: 100%;
+        }
+    }
+  .main-text {
+    font-size: 4rem; /* Large text size */
+    font-weight: bold;
+    color: #fff; /* Dark color for the text */
+    margin-bottom: 30px;
+    font-family: 'Cursive', 'Georgia', serif; /* Playful whimsical serif font */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Optional: adds some shadow for effect */
+    overflow: hidden; /* Hides content that's outside the width */
+    border-right: 4px solid #fff; /* Creates the typing cursor effect */
+    white-space: nowrap; /* Ensures the text doesn't wrap */
+    animation: typewriter 4s steps(30) 1s 1 normal both, blink 0.75s step-end infinite;
+  }
+  
+  /* Blink cursor animation */
+  @keyframes blink {
+    0%,
+    100% {
+      border-color: transparent;
+    }
+    50% {
+      border-color: #fff;
+    }
+  }
+  
+  /* Button Container */
+  .get-started-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Button Style */
+  .get-started-button {
+    background-color: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .get-started-button:hover {
+    background-color: #fff;
+    color: #333; /* Dark text on hover */
+  }
+  
+  .get-started-button span {
+    margin-left: 10px;
+    font-size: 20px; /* Size of the arrow */
+  }
+  
