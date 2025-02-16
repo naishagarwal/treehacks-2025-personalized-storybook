@@ -26,19 +26,26 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 #genai_client = genai.Client(api_key=GEMINI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-class ChildProfile(BaseModel):
-    name: str
+# class ChildProfile(BaseModel):
+#     name: str
+#     age: int
+#     gender: str
+#     location: str
+#     race: str
+#     interests: str
+
+class Profile(BaseModel):
+    nickname: str
     age: int
-    gender: str
     location: str
-    race: str
+    gender: str
     interests: str
 
 class StoryRequest(BaseModel):
     user_input: str
-    child_profile: ChildProfile
+    child_profile: Profile
 
-def generate_story_prompt(user_input: str, child_profile: ChildProfile) -> str:
+def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
     return f"""Generate a story with the following input from a parent: {user_input}. 
     They are telling this story to {child_profile.name}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. 
     Please provide an appropriate children's story given this information, and make it personalized to {child_profile.name}. This should not include any role-playing with you as the parent, just the 
@@ -83,6 +90,28 @@ async def get_story(story_id: int):
         return story_data
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Story not found")
+    
+
+@app.post("/api/save_details")
+async def save_details(profile: Profile):
+    try:
+        os.makedirs("profiles", exist_ok=True)
+        profile_id = len(os.listdir("profiles")) + 1
+        with open(f"profiles/{profile_id}.json", "w") as f:
+            json.dump(profile.dict(), f)
+        return {"profile_id": profile_id, "profile": profile.dict()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/profile/{profile_id}")
+async def get_profile(profile_id: int):
+    try:
+        filename = f"profiles/{profile_id}.json"
+        with open(filename, "r") as f:
+            profile_data = json.load(f)
+        return profile_data
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Profile not found")
 
 if __name__ == "__main__":
     # Create stories directory if it doesn't exist
