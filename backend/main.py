@@ -6,6 +6,9 @@ from google import genai
 from openai import OpenAI
 import json
 import os
+from tinydb import TinyDB, Query
+
+from lumaai import LumaAI
 
 app = FastAPI()
 
@@ -19,12 +22,19 @@ app.add_middleware(
 )
 
 # Load API keys from environment variables
+#LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Initialize clients
 #genai_client = genai.Client(api_key=GEMINI_API_KEY)
+#luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Databse initialization and table creation
+db = TinyDB('db.json')
+videos_table = db.table("page_videos")
+profile_table = db.table("profiles")
 
 class Profile(BaseModel):
     nickname: str
@@ -111,10 +121,8 @@ async def get_story(story_id: int):
 @app.post("/api/save_details")
 async def save_details(profile: Profile):
     try:
-        os.makedirs("profiles", exist_ok=True)
-        profile_id = len(os.listdir("profiles")) + 1
-        with open(f"profiles/{profile_id}.json", "w") as f:
-            json.dump(profile.dict(), f)
+        #insert profile id into TinyDB
+        profile_id = profile_table.insert(profile.dict())
         return {"profile_id": profile_id, "profile": profile.dict()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -128,6 +136,14 @@ async def get_profile(profile_id: int):
         return profile_data
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Profile not found")
+    
+@app.get("/debug/db")
+async def debug_db():
+    return {
+        "profiles": profile_table.all(),
+        "story_videos": videos_table.all()
+    }
+
 
 if __name__ == "__main__":
     # Create stories directory if it doesn't exist
