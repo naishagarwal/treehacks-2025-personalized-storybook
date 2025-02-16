@@ -40,8 +40,8 @@ class StoryRequest(BaseModel):
 
 def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
     return f"""Generate a story with the following input from a parent: {user_input}. 
-    They are telling this story to {child_profile.name}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. 
-    Please provide an appropriate children's story given this information, and make it personalized to {child_profile.name}. This should not include any role-playing with you as the parent, just the 
+    They are telling this story to {child_profile.nickname}, a {child_profile.age} year old {child_profile.gender} from {child_profile.location} who is {child_profile.race} and enjoys {child_profile.interests}. 
+    Please provide an appropriate children's story given this information, and make it personalized to {child_profile.nickname}. This should not include any role-playing with you as the parent, just the 
     story.
     Additionally, please divide up the story into multiple pages, just like a regular children's book. Return the final output in a JSON format,
     where the keys are "story" and "pages", and the values are the story and the list of pages, respectively. DO NOT include Page 1, Page 2, etc in the story. Besides these elements,
@@ -51,29 +51,52 @@ def generate_story_prompt(user_input: str, child_profile: Profile) -> str:
 @app.post("/generate")
 async def create_story(request: StoryRequest):
     try:
-        prompt = generate_story_prompt(request.user_input, request.child_profile)
+        # Log input data for debugging
+        print("User input:", request.user_input)
+        print("Child profile:", request.child_profile)
         
-        # Using OpenAI (you can switch to Gemini by uncommenting the other section)
-        response = openai_client.chat.completions.create(
-            model="gpt-4-mini",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant generating children's stories."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        prompt = generate_story_prompt(request.user_input, request.child_profile)
+        print("Generated Prompt:", prompt)
+        
+        # Call the API in a try/except block to catch errors
+        try:
+            response = openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",  # Consider testing with "gpt-3.5-turbo" if issues persist
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant generating children's stories."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            print("API Response:", response)
+        except Exception as api_error:
+            print("Error during OpenAI API call:", api_error)
+            raise HTTPException(status_code=500, detail=f"OpenAI API error: {api_error}")
+        
+        # Check that the response has the expected structure
+        if not response.choices or not response.choices[0].message:
+            raise HTTPException(status_code=500, detail="Invalid response structure from OpenAI API.")
         
         story_content = response.choices[0].message.content
-        story_data = json.loads(story_content)
+        print("Story Content:", story_content)
         
-        # Save to a file with a unique ID (you might want to use a database instead)
-        story_id = len(os.listdir("stories")) + 1  # Simple ID generation
+        # Attempt to parse the JSON output
+        try:
+            story_data = json.loads(story_content)
+        except Exception as json_error:
+            print("JSON parsing error:", json_error)
+            raise HTTPException(status_code=500, detail=f"Error parsing story JSON: {json_error}. Content received: {story_content}")
+        
+        # Save to a file with a unique ID (or use a database)
+        story_id = len(os.listdir("stories")) + 1
         with open(f"stories/{story_id}.json", "w") as f:
             json.dump(story_data, f)
             
         return {"story_id": story_id, **story_data}
     
     except Exception as e:
+        print("Error in create_story endpoint:", e)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/story/{story_id}")
 async def get_story(story_id: int):
