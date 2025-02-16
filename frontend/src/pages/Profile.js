@@ -17,7 +17,7 @@ const Profile = () => {
     };
 
     try {
-      const response = await fetch('/api/save_details', {
+      const response = await fetch('http://localhost:8000/api/save_details', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
