@@ -250,7 +250,7 @@ async def get_story(story_id: int):
 async def get_saved_stories():
     stories = stories_table.all()
     story_list = [{"story_id": story.doc_id, "title": story["title"]} for story in stories]
-    return {"stories": story_list}
+    return story_list
 
 @app.get("/story_video/{story_id}/{page_number}")
 async def get_story_video_page(story_id: int, page_number: str):
