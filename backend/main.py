@@ -8,7 +8,7 @@ import json
 import os
 from tinydb import TinyDB, Query
 import time
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
 
@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv()
+#load_dotenv()
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 #GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -259,12 +259,14 @@ async def save_details(profile: Profile):
 @app.get("/api/profile/{profile_id}")
 async def get_profile(profile_id: int):
     try:
-        filename = f"profiles/{profile_id}.json"
-        with open(filename, "r") as f:
-            profile_data = json.load(f)
-        return profile_data
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        profile = profile_table.get(doc_id=profile_id)
+        if profile:
+            return profile
+        else:
+            raise HTTPException(status_code=404, detail="Profile not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
     
 @app.get("/debug/db")
 async def debug_db():
