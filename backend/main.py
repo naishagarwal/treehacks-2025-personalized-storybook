@@ -35,9 +35,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 luma_client = LumaAI(auth_token=LUMAAI_API_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Directories for stories and audio files (since they are being stored locally)
-STORIES_DIR = Path("stories")
-STORIES_DIR.mkdir(exist_ok=True)
+# Directories for audio files (since they are being stored locally)
 AUDIO_DIR = Path("tts_outputs")
 AUDIO_DIR.mkdir(exist_ok=True)
 
@@ -114,7 +112,7 @@ def generate_video_for_page(story: str, page: str, style: str) -> str:
     print("Generated video URL:", video_url)
     return video_url
 
-def background_generate_video(story_id: int, story: str, page_number: int, page_content: str, style: str):
+def background_generate_video(story_id: int, story: str, page_number: str, page_content: str, style: str):
     """
     Background task to generate a video for a single page and update its status in TinyDB.
     """
@@ -124,7 +122,7 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[str(page_number)]["video_url"] = video_url
+            pages[page_number]["video_url"] = video_url
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Updated story {story_id}, page {page_number} with video URL.")
     except Exception as e:
@@ -132,7 +130,7 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[str(page_number)]["error"] = str(e)
+            pages[page_number]["error"] = str(e)
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Error for story {story_id}, page {page_number}: {e}")
 
