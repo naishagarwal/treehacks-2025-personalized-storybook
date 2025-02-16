@@ -79,6 +79,8 @@ def generate_character_physical_description(story):
   return response.choices[0].message.content
 
 def generate_video_for_page(story: str, page: str, style: str) -> str:
+    if isinstance(page, dict):
+        page = page.get("content", str(page))
     physical_description = generate_character_physical_description(story)
     starter_prompt = (
         f"Please generate a video for the following page, in a {style} style. "
@@ -121,7 +123,7 @@ def background_generate_video(story_id: int, story: str, page_number: int, page_
         record = videos_table.get(Video.story_id == story_id)
         if record:
             pages = record.get("pages", {})
-            pages[page_number]["error"] = str(e)
+            pages[str(page_number)]["error"] = str(e)
             videos_table.update({"pages": pages}, Video.story_id == story_id)
             print(f"Error for story {story_id}, page {page_number}: {e}")
 
