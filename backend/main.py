@@ -249,7 +249,7 @@ async def get_story(story_id: int):
 @app.get("/get_saved_stories")
 async def get_saved_stories():
     stories = stories_table.all()
-    story_list = [{"story_id": story.doc_id, "title": story.get("title", "Untitled Story")} for story in stories]
+    story_list = [{"story_id": story.doc_id, "title": story["title"]} for story in stories]
     return {"stories": story_list}
 
 @app.get("/story_video/{story_id}/{page_number}")
