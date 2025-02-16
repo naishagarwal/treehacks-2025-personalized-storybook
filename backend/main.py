@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Body, Response
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Body, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -12,6 +12,7 @@ import time
 from lumaai import LumaAI
 import uuid
 from pathlib import Path
+import io
 
 app = FastAPI()
 
@@ -276,6 +277,30 @@ async def get_profile(profile_id: int):
             return profile
         else:
             raise HTTPException(status_code=404, detail="Profile not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Takes an audio file and returns transcribed text using OpenAI Whisper API.
+    """
+    try:
+        print(f"Received file: {file.filename}, Content-Type: {file.content_type}")
+        # Read the uploaded file into memory
+        audio_data = await file.read()
+        print("read file")
+        audio_file = io.BytesIO(audio_data)  # Create an in-memory file
+
+        # Transcribe using OpenAI Whisper
+        print("whispering")
+        response = openai_client.audio.transcriptions.create(
+            model="whisper-1",
+            file=("audio.mp3", audio_data, "audio/mpeg")
+        )
+
+        return {"transcription": response.text}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
