@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ReactComponent as MicIcon } from '../assets/mic.svg'; // Adjust the path to your SVG file
-import { ReactComponent as BooksIcon } from '../assets/books.svg'; // Adjust the path to your SVG file
-import { ReactComponent as SpeakerIcon } from '../assets/speaker.svg'; // Adjust the path to your SVG file
+import { ReactComponent as MicIcon } from '../assets/mic.svg';
+import { ReactComponent as BooksIcon } from '../assets/books.svg';
+import { ReactComponent as SpeakerIcon } from '../assets/speaker.svg';
 
 const Storybook = () => {
   const [page, setPage] = useState(0);
@@ -12,15 +12,15 @@ const Storybook = () => {
   const story = [
     {
       text: "One warm morning, Maya ran outside to check on her guava tree. 'Why are there no guavas yet?' she asked, tapping the trunk.",
-      image: "https://media.istockphoto.com/id/479256936/vector/little-red-riding-hood-and-the-wolf.jpg?s=612x612&w=0&k=20&c=cOh_UdkV5ct8N3JRrFs5ru1a4KTnVFeeY-zVd1KcadI="
+      video: "https://storage.cdn-luma.com/dream_machine/0243eeeb-bb11-4b39-b2ab-82739f247285/c2e848ea-a4ba-4480-83ea-1e985d83543b_result5e59403281346a5d.mp4"
     },
     {
       text: "Her grandmother smiled. 'Guavas need time, Maya. Good things come to those who wait.'",
-      image: "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/248477037/original/bef7fffaa7cf7d1302b487a7a0af533b473f28dc/do-charming-children-story-book-illustration.jpg"
+      video: "https://storage.cdn-luma.com/dream_machine/22d8a3e0-b58b-434e-be20-11aa4690c8db/90048fd5-2d7c-4cc1-b4ae-59c0f0d7a452_result585a99847c952352.mp4"
     },
     {
       text: "Days passed, and one morning, Maya saw tiny green guavas on the branches. 'They're here!' she cheered, learning the power of patience.",
-      image: "https://media.istockphoto.com/id/479256936/vector/little-red-riding-hood-and-the-wolf.jpg?s=612x612&w=0&k=20&c=cOh_UdkV5ct8N3JRrFs5ru1a4KTnVFeeY-zVd1KcadI="
+      video: "https://storage.cdn-luma.com/dream_machine/edae50b5-5f4a-4fd6-a1f2-3e1bcc8ed6be/9674fb89-9b1b-44f5-a865-94ada6dd91a4_result73412e38eec02411.mp4"
     }
   ];
 
@@ -36,7 +36,7 @@ const Storybook = () => {
         }
         return prev + 1;
       });
-    }, 65); // Adjust speed here - lower number = faster
+    }, 65);
   };
 
   const stopReading = () => {
@@ -81,63 +81,65 @@ const Storybook = () => {
   };
 
   return (
-      
-      <div className="relative flex items-center justify-center min-h-[60vh]">
-        {/* Navigation arrows */}
-        <button 
-          onClick={goToPrev} 
-          className="absolute left-12 text-white text-6xl font-thin opacity-70 hover:opacity-100 transition-opacity z-10"
-        >
-          ‹
-        </button>
+    <div className="h-9/10 flex flex-col px-8 py-6">
 
-        {/* Story content - Side by side layout */}
-        <div className="w-full max-w-6xl flex gap-16 px-24">
-          {/* Text section */}
-          <div className="w-2/5 flex flex-col">
-            <div className="text-2xl font-light leading-relaxed tracking-wide mb-12 font-serif">
-              <AnimatedText text={story[page].text} />
-            </div>
-            
-            {/* Control buttons - Now left aligned under text */}
-            <div className="flex gap-8">
-              <button 
-                onClick={startReading}
-                className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors"
-              >
-                <SpeakerIcon className="w-8 h-8"/>
-              </button>
-              <button className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors">
-                <MicIcon className="w-8 h-8"/>
-              </button>
-              <button className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors">
-               <BooksIcon className="w-8 h-7"/>
-              </button>
-            </div>
+      {/* Main content */}
+      <div className="flex-1 relative ">
+        {/* Text container - positioned absolutely to allow overlap */}
+        <div className="absolute z-10 left-16 top-1/4 w-1/3">
+          <div className="text-3xl font-light leading-relaxed tracking-wide text-white/90 font-serif mb-12">
+            <AnimatedText text={story[page].text} />
           </div>
 
-          {/* Image section */}
-          <div className="w-3/5 relative">
-            <div className="aspect-square relative overflow-hidden rounded-lg">
-              <img 
-                src={story[page].image} 
-                alt={`Story page ${page + 1}`} 
-                className="w-full h-full object-cover"
-              />
-                {/* Stronger radial gradient overlay */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,1)_100%)]"></div>
-
-            </div>
+          {/* Control buttons */}
+          <div className="flex gap-6">
+            <button 
+              onClick={startReading}
+              className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <SpeakerIcon className="w-6 h-6 text-white/90"/>
+            </button>
+            <button 
+              className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <MicIcon className="w-6 h-6 text-white/90"/>
+            </button>
+            <button 
+              className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <BooksIcon className="w-6 h-6 text-white/90"/>
+            </button>
           </div>
         </div>
 
+        {/* Video container - right aligned */}
+        <div className="relative w-2/3 aspect-video ml-auto">
+          <video 
+            src={story[page].video} 
+            autoPlay 
+            loop 
+            muted
+            className="w-full object-cover"
+          />
+          {/* Strong fade overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050200] via-[#050200]/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050200] via-transparent to-[#050200]"></div>
+        </div>
+        {/* Navigation arrows */}
         <button 
-          onClick={goToNext} 
-          className="absolute right-12 text-white text-6xl font-thin opacity-70 hover:opacity-100 transition-opacity z-10"
-        >
-          ›
-        </button>
+            onClick={goToPrev} 
+            className="absolute left- top-1/2 -translate-y-1/2 text-white text-6xl font-thin opacity-70 hover:opacity-100 transition-opacity"
+          >
+            ‹
+          </button>
+          <button 
+            onClick={goToNext} 
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-6xl font-thin opacity-70 hover:opacity-100 transition-opacity"
+          >
+            ›
+          </button>
       </div>
+    </div>
   );
 };
 

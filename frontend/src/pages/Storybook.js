@@ -14,7 +14,7 @@ const StoryPage = () => {
   }, [storyId]);
 
   return (
-    <div className="bg-black text-white h-screen">
+    <div className="text-white h-screen">
       <NavBar />
       <Storybook story={story} />
     </div>

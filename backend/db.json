@@ -1,1 +1,20 @@
-{"profiles": {"1": {"nickname": "mer", "age": 4, "location": "", "gender": "girl", "race": "", "interests": "dogs"}, "2": {"nickname": "mer", "age": 4, "location": "", "gender": "", "race": "", "interests": "dogs"}}}
+{
+    "profiles": {
+        "1": {
+            "nickname": "mer",
+            "age": 4,
+            "location": "",
+            "gender": "girl",
+            "race": "",
+            "interests": "dogs"
+        },
+        "2": {
+            "nickname": "mer",
+            "age": 4,
+            "location": "",
+            "gender": "",
+            "race": "",
+            "interests": "dogs"
+        }
+    }
+}
