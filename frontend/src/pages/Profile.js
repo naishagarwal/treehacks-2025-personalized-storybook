@@ -29,7 +29,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0403] flex items-center justify-center">
+    <div className="min-h-screen bg-[#050200] flex items-center justify-center">
       <div className="p-6 rounded-md w-80 space-y-4">
         <h1 className="text-2xl text-center font-light mb-6">Reader Profile</h1>
 

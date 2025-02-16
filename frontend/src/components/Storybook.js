@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { ReactComponent as MicIcon } from '../assets/mic.svg'; // Adjust the path to your SVG file
+import { ReactComponent as BooksIcon } from '../assets/books.svg'; // Adjust the path to your SVG file
+import { ReactComponent as SpeakerIcon } from '../assets/speaker.svg'; // Adjust the path to your SVG file
 
 const Storybook = () => {
   const [page, setPage] = useState(0);
@@ -102,17 +105,13 @@ const Storybook = () => {
                 onClick={startReading}
                 className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors"
               >
-                <div className="w-4 h-8 bg-white rounded-full"></div>
+                <SpeakerIcon className="w-8 h-8"/>
               </button>
               <button className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors">
-                <div className="w-3 h-3 border-l-2 border-t-2 border-white rotate-[-45deg] translate-x-0.5"></div>
+                <MicIcon className="w-8 h-8"/>
               </button>
               <button className="w-12 h-12 rounded-full border border-white flex items-center justify-center hover:bg-white/10 transition-colors">
-                <div className="space-y-1">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="w-6 h-0.5 bg-white"></div>
-                  ))}
-                </div>
+               <BooksIcon className="w-8 h-7"/>
               </button>
             </div>
           </div>

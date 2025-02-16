@@ -30,7 +30,7 @@ const Generate = () => {
   return (
     <div>
     <NavBar />
-        <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+        <div className="flex flex-col items-center justify-center h-screen text-white">
         <h1 className="text-2xl mb-4">Describe Your Story</h1>
         <textarea
             className="w-1/2 h-32 p-4 mb-4 text-black"

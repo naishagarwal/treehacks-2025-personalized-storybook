@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ReactComponent as ProfileIcon } from '../assets/profile.svg'; // Adjust the path to your SVG file
 
 const NavBar = ({ leftText = "generate new", centerText = "saved stories" }) => {
   return (
@@ -34,7 +35,7 @@ const NavBar = ({ leftText = "generate new", centerText = "saved stories" }) => 
                 to="/profile" // Link to the 'new' page
                 className="opacity-70 hover:opacity-100 cursor-pointer transition-opacity"
             >
-            <div className="w-4 h-4 rounded-full border border-white"></div>
+            <ProfileIcon className="w-7 h-7 text-white" />
           </Link>
         </div>
       </div>
