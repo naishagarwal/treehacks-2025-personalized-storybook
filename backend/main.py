@@ -181,13 +181,6 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
                 page_info["content"],
                 style
             )
-            background_tasks.add_task(
-                background_generate_audio,
-                story_id,
-                int(page_number),
-                page_info["content"],
-                default_voice
-            )
 
         return {"story_id": story_id, **story_data}
     
