@@ -5,6 +5,7 @@ import NavBar from "../components/NavBar";
 const Generate = () => {
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);  // State to track recording status
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
   // Fetch profile details on component mount using the stored profile_id

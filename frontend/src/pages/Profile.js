@@ -89,14 +89,14 @@ const Profile = () => {
         </div>
 
         {/* Race Input */}
-        <div>
-          <label htmlFor="race" className="block text-xl mb-2">Race</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="gender" className="text-sm">race (optional)</label>
           <input
+            id="gender"
             type="text"
-            id="race"
-            value={race}
+            value={gender}
             onChange={(e) => setRace(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md text-white"
+            className="w-50 p-2 bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] rounded-md text-light"
           />
         </div>
 
