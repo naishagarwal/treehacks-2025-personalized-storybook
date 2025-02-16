@@ -8,7 +8,7 @@ import json
 import os
 from tinydb import TinyDB, Query
 import time
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from lumaai import LumaAI
 import uuid
 from pathlib import Path
@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv()
+#load_dotenv()
 # Load API keys from environment variables
 LUMAAI_API_KEY = os.getenv("LUMAAI_API_KEY")
 #GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -195,10 +195,11 @@ async def create_story(request: StoryRequest, background_tasks: BackgroundTasks)
         story_data = json.loads(story_content)
 
         # Save the story in TinyDB instead of a file
-        story_id = stories_table.insert(story_data)
+        stories_table.insert(story_data)
 
         # Initialize video & audio generation status in TinyDB
         pages_status = {}
+        story_id = story_data.get("story_id")
         title = story_data.get("story")
         pages = story_data.get("pages", [])
         
