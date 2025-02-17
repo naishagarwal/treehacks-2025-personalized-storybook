@@ -1,13 +1,9 @@
+A personalized digital storytelling experience designed to bring inclusivity, creativity, and educational value to every child’s bedtime story.
 
+How to start:
 
-"Can you help me tell my daughter a story about life as a little girl in India.."
-"Tell my brother a story that teaches him why patience is a virtue..."
+frontend: npm start
+backend: python main.py
 
-....
+Will need API keys for Luma and OpenAI
 
-Prizes to apply for:
-- Education track
-- Luma AI
-- Open AI/Mistral/Gemini?
-- Flutter
-- Delve UI
